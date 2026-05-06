@@ -165,11 +165,12 @@ const ProjectDetail = () => {
                             {(dp, ds) => (
                               <div ref={dp.innerRef} {...dp.draggableProps} {...dp.dragHandleProps}
                                 style={{ ...dp.draggableProps.style }}
-                                className={`group p-3 rounded-xl bg-card border border-border shadow-card ${ds.isDragging ? "shadow-lift rotate-1" : ""} transition-shadow`}>
+                                onClick={() => setActiveTask(t)}
+                                className={`group p-3 rounded-xl bg-card border border-border border-l-4 ${priBorder[t.priority]} shadow-card cursor-pointer ${ds.isDragging ? "shadow-lift rotate-1" : "hover:shadow-lift"} transition-shadow`}>
                                 <div className="flex items-start justify-between gap-2">
                                   <h4 className="font-medium text-sm leading-snug">{t.title}</h4>
                                   {role === "admin" && (
-                                    <button onClick={() => deleteTask(t.id)} className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-opacity">
+                                    <button onClick={(e) => { e.stopPropagation(); deleteTask(t.id); }} className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-opacity">
                                       <Trash2 className="h-3.5 w-3.5" />
                                     </button>
                                   )}
