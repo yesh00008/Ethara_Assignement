@@ -1,25 +1,46 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
+import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Sparkles, ArrowLeft } from "lucide-react";
 import toast from "react-hot-toast";
 
-const FloatingInput = ({ label, type = "text", value, onChange, error }: any) => (
-  <div className="relative">
-    <input
-      type={type}
-      value={value}
-      onChange={onChange}
-      placeholder=" "
-      className={`peer w-full h-14 px-4 pt-5 pb-1 rounded-xl bg-secondary/60 border ${error ? "border-destructive" : "border-border"} focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all`}
-    />
-    <label className="absolute left-4 top-4 text-muted-foreground text-sm transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-focus:top-1.5 peer-focus:text-xs peer-focus:text-primary peer-[:not(:placeholder-shown)]:top-1.5 peer-[:not(:placeholder-shown)]:text-xs pointer-events-none">
-      {label}
-    </label>
-  </div>
-);
+const FloatingInput = ({ label, type = "text", value, onChange, error, touched }: any) => {
+  const showErr = touched && error;
+  return (
+    <div>
+      <div className="relative">
+        <input
+          type={type}
+          value={value}
+          onChange={onChange}
+          placeholder=" "
+          className={`peer w-full h-14 px-4 pt-5 pb-1 rounded-xl bg-secondary/60 border ${showErr ? "border-destructive" : "border-border"} focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all`}
+        />
+        <label className="absolute left-4 top-4 text-muted-foreground text-sm transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-focus:top-1.5 peer-focus:text-xs peer-focus:text-primary peer-[:not(:placeholder-shown)]:top-1.5 peer-[:not(:placeholder-shown)]:text-xs pointer-events-none">
+          {label}
+        </label>
+      </div>
+      <AnimatePresence>
+        {showErr && (
+          <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="text-xs text-destructive mt-1 ml-1">{error}</motion.p>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
+const signupSchema = z.object({
+  fullName: z.string().trim().min(1, "Name is required").max(50, "Name must be ≤ 50 chars"),
+  email: z.string().trim().email("Invalid email"),
+  password: z.string().min(8, "At least 8 characters").regex(/[A-Z]/, "Needs an uppercase letter").regex(/[0-9]/, "Needs a number").regex(/[^A-Za-z0-9]/, "Needs a special character"),
+});
+const loginSchema = z.object({
+  email: z.string().trim().email("Invalid email"),
+  password: z.string().min(1, "Password required"),
+});
 
 const Auth = () => {
   const [params] = useSearchParams();
