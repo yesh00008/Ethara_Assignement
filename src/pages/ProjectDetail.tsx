@@ -53,7 +53,13 @@ const ProjectDetail = () => {
   const [allUsers, setAllUsers] = useState<any[]>([]);
   const [openTask, setOpenTask] = useState(false);
   const [openMember, setOpenMember] = useState(false);
+  const [view, setView] = useState<"kanban" | "list">("kanban");
+  const [sortBy, setSortBy] = useState<{ key: string; dir: "asc" | "desc" }>({ key: "title", dir: "asc" });
+  const [activeTask, setActiveTask] = useState<Task | null>(null);
   const [form, setForm] = useState({ title: "", description: "", priority: "medium" as Priority, assigned_to: "", due_date: "" });
+  const titleErr = form.title.trim().length > 0 && form.title.trim().length < 3 ? "Title must be ≥ 3 characters" : form.title.length > 150 ? "Title too long" : "";
+  const dueErr = form.due_date && new Date(form.due_date) < new Date(new Date().toDateString()) ? "Due date can't be in the past" : "";
+  const formValid = form.title.trim().length >= 3 && !titleErr && !dueErr;
 
   const load = async () => {
     if (!id) return;
