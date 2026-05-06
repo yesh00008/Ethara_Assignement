@@ -315,7 +315,7 @@ const ProjectDetail = () => {
                     <option value="">Unassigned</option>
                     {members.map(m => <option key={m.user_id} value={m.user_id}>{m.profiles?.full_name || m.profiles?.email}</option>)}
                   </select></div>
-                <Button type="submit" className="w-full h-11 bg-gradient-primary hover:opacity-90 shadow-glow">Create task</Button>
+                <Button type="submit" disabled={!formValid} className="w-full h-11 bg-gradient-primary hover:opacity-90 shadow-glow disabled:opacity-50">Create task</Button>
               </form>
             </motion.div>
           </>
