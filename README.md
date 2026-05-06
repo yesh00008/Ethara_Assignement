@@ -41,7 +41,7 @@ npm install
 npm run dev
 ```
 
-The Supabase URL & publishable key are auto-injected via Lovable Cloud.
+The Supabase URL & publishable key need to be configured in your environment.
 
 ## 🔑 Roles
 
@@ -50,4 +50,4 @@ The Supabase URL & publishable key are auto-injected via Lovable Cloud.
 
 ## 📦 Deployment
 
-This app runs on Lovable's hosting. Click **Publish** in the top right to ship a live URL. Custom domains are available in Project Settings → Domains.
+Deploy to your preferred hosting provider (Vercel, Netlify, etc.) by connecting your repository and configuring the necessary environment variables.
