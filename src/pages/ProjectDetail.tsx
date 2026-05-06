@@ -204,7 +204,85 @@ const ProjectDetail = () => {
             ))}
           </div>
         </DragDropContext>
+        ) : (
+          <div className="rounded-2xl border border-border bg-card overflow-hidden">
+            <table className="w-full text-sm">
+              <thead className="bg-secondary/50">
+                <tr>
+                  {[{ k: "title", l: "Title" }, { k: "assignee", l: "Assignee" }, { k: "priority", l: "Priority" }, { k: "status", l: "Status" }, { k: "due_date", l: "Due" }].map(c => (
+                    <th key={c.k} onClick={() => setSortBy(s => ({ key: c.k, dir: s.key === c.k && s.dir === "asc" ? "desc" : "asc" }))}
+                      className="text-left px-4 py-3 font-medium cursor-pointer select-none hover:text-primary">
+                      {c.l} {sortBy.key === c.k ? (sortBy.dir === "asc" ? "↑" : "↓") : ""}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {[...tasks].sort((a: any, b: any) => {
+                  const av = sortBy.key === "assignee" ? (a.assignee?.full_name || "") : (a[sortBy.key] || "");
+                  const bv = sortBy.key === "assignee" ? (b.assignee?.full_name || "") : (b[sortBy.key] || "");
+                  return (av > bv ? 1 : -1) * (sortBy.dir === "asc" ? 1 : -1);
+                }).map(t => (
+                  <tr key={t.id} onClick={() => setActiveTask(t)} className="border-t border-border hover:bg-secondary/40 cursor-pointer">
+                    <td className="px-4 py-3 font-medium">{t.title}</td>
+                    <td className="px-4 py-3 text-muted-foreground">{t.assignee?.full_name || "—"}</td>
+                    <td className="px-4 py-3"><span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-md ${priColor[t.priority]}`}>{t.priority}</span></td>
+                    <td className="px-4 py-3"><span className={`text-xs px-2 py-0.5 rounded-md ${statusColor[t.status]}`}>{t.status}</span></td>
+                    <td className="px-4 py-3 text-muted-foreground tabular-nums">{t.due_date ? format(new Date(t.due_date), "MMM d, yyyy") : "—"}</td>
+                  </tr>
+                ))}
+                {tasks.length === 0 && <tr><td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">No tasks yet.</td></tr>}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
+
+      {/* Task Detail Drawer */}
+      <AnimatePresence>
+        {activeTask && (
+          <>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setActiveTask(null)} className="fixed inset-0 bg-background/60 backdrop-blur-sm z-40" />
+            <motion.div initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={{ type: "spring", damping: 30, stiffness: 300 }}
+              className="fixed top-0 right-0 h-full w-full max-w-md bg-card border-l border-border z-50 p-6 overflow-y-auto">
+              <div className="flex items-center justify-between mb-6">
+                <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-md ${priColor[activeTask.priority]}`}>{activeTask.priority}</span>
+                <Button size="icon" variant="ghost" onClick={() => setActiveTask(null)}><X className="h-4 w-4" /></Button>
+              </div>
+              <h2 className="font-display text-2xl font-bold mb-2">{activeTask.title}</h2>
+              {activeTask.description && <p className="text-sm text-muted-foreground mb-6 whitespace-pre-wrap">{activeTask.description}</p>}
+              <div className="space-y-4 text-sm">
+                <div>
+                  <label className="text-xs text-muted-foreground">Status</label>
+                  <select value={activeTask.status}
+                    disabled={role !== "admin" && activeTask.assigned_to !== user?.id}
+                    onChange={async (e) => {
+                      const newStatus = e.target.value as Status;
+                      const tid = activeTask.id;
+                      setActiveTask({ ...activeTask, status: newStatus });
+                      setTasks(prev => prev.map(t => t.id === tid ? { ...t, status: newStatus } : t));
+                      const { error } = await supabase.from("tasks").update({ status: newStatus }).eq("id", tid);
+                      if (error) { toast.error(error.message); load(); } else toast.success("Updated");
+                    }}
+                    className="mt-1 w-full h-10 px-3 rounded-lg bg-secondary border border-border outline-none disabled:opacity-60">
+                    {COLUMNS.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
+                  </select>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div><div className="text-xs text-muted-foreground">Assignee</div><div className="mt-1 font-medium">{activeTask.assignee?.full_name || "Unassigned"}</div></div>
+                  <div><div className="text-xs text-muted-foreground">Due date</div><div className={`mt-1 font-medium tabular-nums ${activeTask.due_date && isPast(new Date(activeTask.due_date)) && activeTask.status !== "done" ? "text-destructive" : ""}`}>{activeTask.due_date ? format(new Date(activeTask.due_date), "MMM d, yyyy") : "—"}</div></div>
+                </div>
+                {role === "admin" && (
+                  <Button variant="outline" className="w-full text-destructive hover:bg-destructive/10" onClick={() => {
+                    if (confirm("Delete this task?")) { deleteTask(activeTask.id); setActiveTask(null); }
+                  }}><Trash2 className="h-4 w-4 mr-2" /> Delete task</Button>
+                )}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
 
       {/* Add Task Drawer */}
       <AnimatePresence>
