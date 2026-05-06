@@ -297,16 +297,18 @@ const ProjectDetail = () => {
               </div>
               <form onSubmit={createTask} className="space-y-4">
                 <div><label className="text-sm font-medium mb-1.5 block">Title</label>
-                  <input required value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} className="w-full h-11 px-3 rounded-lg bg-secondary border border-border focus:border-primary outline-none" /></div>
+                  <input required value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} className={`w-full h-11 px-3 rounded-lg bg-secondary border ${titleErr ? "border-destructive" : "border-border"} focus:border-primary outline-none`} />
+                  {titleErr && <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="text-xs text-destructive mt-1">{titleErr}</motion.p>}</div>
                 <div><label className="text-sm font-medium mb-1.5 block">Description</label>
-                  <textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={3} className="w-full px-3 py-2 rounded-lg bg-secondary border border-border focus:border-primary outline-none resize-none" /></div>
+                  <textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={3} maxLength={1000} className="w-full px-3 py-2 rounded-lg bg-secondary border border-border focus:border-primary outline-none resize-none" /></div>
                 <div className="grid grid-cols-2 gap-3">
                   <div><label className="text-sm font-medium mb-1.5 block">Priority</label>
                     <select value={form.priority} onChange={e => setForm({ ...form, priority: e.target.value as Priority })} className="w-full h-11 px-3 rounded-lg bg-secondary border border-border focus:border-primary outline-none">
                       <option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option>
                     </select></div>
                   <div><label className="text-sm font-medium mb-1.5 block">Due date</label>
-                    <input type="date" value={form.due_date} onChange={e => setForm({ ...form, due_date: e.target.value })} className="w-full h-11 px-3 rounded-lg bg-secondary border border-border focus:border-primary outline-none" /></div>
+                    <input type="date" value={form.due_date} onChange={e => setForm({ ...form, due_date: e.target.value })} className={`w-full h-11 px-3 rounded-lg bg-secondary border ${dueErr ? "border-destructive" : "border-border"} focus:border-primary outline-none`} />
+                    {dueErr && <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="text-xs text-destructive mt-1">{dueErr}</motion.p>}</div>
                 </div>
                 <div><label className="text-sm font-medium mb-1.5 block">Assign to</label>
                   <select value={form.assigned_to} onChange={e => setForm({ ...form, assigned_to: e.target.value })} className="w-full h-11 px-3 rounded-lg bg-secondary border border-border focus:border-primary outline-none">
