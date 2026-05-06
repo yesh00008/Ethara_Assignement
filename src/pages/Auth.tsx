@@ -51,10 +51,23 @@ const Auth = () => {
   const [role, setRole] = useState<"admin" | "member">("member");
   const [loading, setLoading] = useState(false);
   const [shake, setShake] = useState(false);
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
   const nav = useNavigate();
+
+  const errors = useMemo(() => {
+    const schema = mode === "signup" ? signupSchema : loginSchema;
+    const data = mode === "signup" ? { fullName, email, password } : { email, password };
+    const r = schema.safeParse(data);
+    const e: Record<string, string> = {};
+    if (!r.success) r.error.issues.forEach(i => { e[i.path[0] as string] = i.message; });
+    return e;
+  }, [mode, email, password, fullName]);
+  const isValid = Object.keys(errors).length === 0;
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setTouched({ fullName: true, email: true, password: true });
+    if (!isValid) { setShake(true); setTimeout(() => setShake(false), 400); return; }
     setLoading(true);
     try {
       if (mode === "signup") {
@@ -76,6 +89,8 @@ const Auth = () => {
       toast.error(err.message || "Something went wrong");
     } finally { setLoading(false); }
   };
+
+  const blur = (k: string) => () => setTouched(t => ({ ...t, [k]: true }));
 
   return (
     <div className="min-h-screen bg-background bg-mesh grid place-items-center p-4">
@@ -108,7 +123,9 @@ const Auth = () => {
           <AnimatePresence>
             {mode === "signup" && (
               <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="space-y-3 overflow-hidden">
-                <FloatingInput label="Full name" value={fullName} onChange={(e: any) => setFullName(e.target.value)} />
+                <div onBlur={blur("fullName")}>
+                  <FloatingInput label="Full name" value={fullName} onChange={(e: any) => setFullName(e.target.value)} error={errors.fullName} touched={touched.fullName} />
+                </div>
                 <div className="grid grid-cols-2 gap-2 p-1 bg-secondary/60 rounded-xl">
                   {(["member", "admin"] as const).map(r => (
                     <button type="button" key={r} onClick={() => setRole(r)}
@@ -121,10 +138,14 @@ const Auth = () => {
               </motion.div>
             )}
           </AnimatePresence>
-          <FloatingInput label="Email" type="email" value={email} onChange={(e: any) => setEmail(e.target.value)} />
-          <FloatingInput label="Password" type="password" value={password} onChange={(e: any) => setPassword(e.target.value)} />
+          <div onBlur={blur("email")}>
+            <FloatingInput label="Email" type="email" value={email} onChange={(e: any) => setEmail(e.target.value)} error={errors.email} touched={touched.email} />
+          </div>
+          <div onBlur={blur("password")}>
+            <FloatingInput label="Password" type="password" value={password} onChange={(e: any) => setPassword(e.target.value)} error={errors.password} touched={touched.password} />
+          </div>
 
-          <Button type="submit" disabled={loading} className="w-full h-12 bg-gradient-primary hover:opacity-90 shadow-glow font-semibold">
+          <Button type="submit" disabled={loading || !isValid} className="w-full h-12 bg-gradient-primary hover:opacity-90 shadow-glow font-semibold disabled:opacity-50">
             {loading ? <span className="h-5 w-5 rounded-full border-2 border-white/30 border-t-white animate-spin" /> : (mode === "login" ? "Sign in" : "Create account")}
           </Button>
         </form>
