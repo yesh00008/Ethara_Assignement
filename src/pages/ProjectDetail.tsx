@@ -32,6 +32,17 @@ const priColor: Record<Priority, string> = {
   medium: "bg-amber-500/15 text-amber-600 dark:text-amber-400",
   high: "bg-rose-500/15 text-rose-600 dark:text-rose-400",
 };
+const priBorder: Record<Priority, string> = {
+  low: "border-l-emerald-500",
+  medium: "border-l-amber-500",
+  high: "border-l-rose-500",
+};
+const statusColor: Record<Status, string> = {
+  todo: "bg-muted text-muted-foreground",
+  "in-progress": "bg-primary/15 text-primary",
+  review: "bg-amber-500/15 text-amber-600 dark:text-amber-400",
+  done: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
+};
 
 const ProjectDetail = () => {
   const { id } = useParams<{ id: string }>();
