@@ -137,8 +137,15 @@ const ProjectDetail = () => {
                 <Button size="sm" onClick={() => setOpenTask(true)} className="bg-gradient-primary hover:opacity-90 shadow-glow gap-1.5"><Plus className="h-3.5 w-3.5" /> Add task</Button>
               </>
             )}
+            <div className="ml-auto flex gap-1 p-1 rounded-lg bg-secondary/60">
+              {(["kanban", "list"] as const).map(v => (
+                <button key={v} onClick={() => setView(v)} className={`px-3 h-8 text-xs font-medium rounded-md capitalize ${view === v ? "bg-card shadow-sm" : "text-muted-foreground"}`}>{v}</button>
+              ))}
+            </div>
           </div>
         </motion.div>
+
+        {view === "kanban" ? (
 
         <DragDropContext onDragEnd={onDragEnd}>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
